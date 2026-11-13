@@ -1,12 +1,312 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kelas Bu Rasmi Gultom</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Matematika - Aljabar</title>
+  <style>
+    :root {
+      --navy: #17324d;
+      --blue: #2563eb;
+      --pale: #eff6ff;
+      --green: #15803d;
+      --red: #b91c1c;
+      --ink: #1f2937;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 14px 40px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(135deg, #eaf2ff, #f8fafc 55%, #e8f7f1);
+    }
+    .container {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 12px 35px rgba(23, 50, 77, .12);
+      overflow: hidden;
+    }
+    header {
+      padding: 28px 26px;
+      color: white;
+      background: linear-gradient(120deg, #17324d, #2563eb);
+    }
+    header h1 { margin: 0 0 8px; font-size: clamp(24px, 5vw, 34px); }
+    header p { margin: 0; line-height: 1.5; color: #eaf2ff; }
+    main { padding: 24px; }
+    .info {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .pill {
+      padding: 8px 12px; border-radius: 999px;
+      background: var(--pale); color: var(--navy);
+      font-size: 14px; font-weight: 700;
+    }
+    .progress-wrap {
+      height: 9px; background: #e5e7eb;
+      border-radius: 99px; overflow: hidden; margin: 12px 0 24px;
+    }
+    #progress { width: 0%; height: 100%; background: #22c55e; transition: width .25s; }
+    .question-card {
+      border: 1px solid #e2e8f0; border-radius: 16px;
+      padding: 22px; background: #fff;
+    }
+    .question-number { color: var(--blue); font-weight: 700; font-size: 14px; }
+    #question { font-size: 20px; line-height: 1.55; margin: 12px 0 20px; }
+    .options { display: grid; gap: 11px; }
+    .option {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; text-align: left; padding: 14px 15px;
+      border: 1.5px solid #cbd5e1; border-radius: 12px;
+      background: white; cursor: pointer; font-size: 16px;
+      color: var(--ink); transition: .15s;
+    }
+    .option:hover:not(:disabled) { border-color: var(--blue); background: #f8fbff; }
+    .option .letter {
+      display: grid; place-items: center; flex: 0 0 30px;
+      height: 30px; border-radius: 50%; background: #eaf0f8;
+      font-weight: 700; color: var(--navy);
+    }
+    .option.selected { border-color: var(--blue); background: #eff6ff; }
+    .option.correct { border-color: var(--green); background: #f0fdf4; }
+    .option.wrong { border-color: var(--red); background: #fef2f2; }
+    .option:disabled { cursor: default; opacity: 1; }
+    #feedback {
+      display: none; margin-top: 16px; padding: 14px 16px;
+      border-radius: 12px; line-height: 1.5;
+    }
+    #feedback.good { display: block; background: #f0fdf4; color: #166534; }
+    #feedback.bad { display: block; background: #fef2f2; color: #991b1b; }
+    .controls {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; margin-top: 20px;
+    }
+    button.action {
+      border: 0; border-radius: 11px; padding: 12px 20px;
+      background: var(--blue); color: white; font-size: 16px;
+      font-weight: 700; cursor: pointer;
+    }
+    button.action:disabled { background: #94a3b8; cursor: not-allowed; }
+    #result { display: none; text-align: center; padding: 16px 4px 8px; }
+    #result h2 { color: var(--navy); font-size: 28px; }
+    .score {
+      width: 145px; height: 145px; border-radius: 50%;
+      margin: 20px auto; display: grid; place-items: center;
+      background: var(--pale); color: var(--blue);
+      font-size: 32px; font-weight: 800; border: 8px solid #bfdbfe;
+    }
+    #result p { line-height: 1.6; color: var(--muted); }
+    .small { font-size: 13px; color: var(--muted); }
+    @media (max-width: 520px) {
+      main { padding: 17px; }
+      header { padding: 23px 19px; }
+      .question-card { padding: 17px; }
+      .controls { align-items: stretch; }
+      button.action { flex: 1; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Selamat datang!</h1>
-  <p>Website kelas Matematika.</p>
+  <div class="container">
+    <header>
+      <h1>Quiz Matematika: Aljabar</h1>
+      <p>Uji pemahamanmu tentang variabel, koefisien, konstanta, dan operasi bentuk aljabar.</p>
+    </header>
+    <main>
+      <div id="quiz-area">
+        <div class="info">
+          <span class="pill">Kelas VII SMP</span>
+          <span class="pill">10 Soal Pilihan Ganda</span>
+          <span class="pill">Nilai Maksimal: 100</span>
+        </div>
+        <div class="info" style="justify-content:space-between;margin-bottom:0">
+          <strong id="counter">Soal 1 dari 10</strong>
+          <span class="small" id="answered">Sudah dijawab: 0</span>
+        </div>
+        <div class="progress-wrap"><div id="progress"></div></div>
+        <section class="question-card" aria-live="polite">
+          <div class="question-number" id="question-label">PERTANYAAN 1</div>
+          <div id="question"></div>
+          <div class="options" id="options"></div>
+          <div id="feedback" role="status"></div>
+        </section>
+        <div class="controls">
+          <span class="small">Pilih satu jawaban yang paling tepat.</span>
+          <button class="action" id="next" disabled>Soal Berikutnya</button>
+        </div>
+      </div>
+
+      <section id="result">
+        <h2>Quiz Selesai!</h2>
+        <div class="score" id="score">0/100</div>
+        <h3 id="message"></h3>
+        <p id="summary"></p>
+        <button class="action" onclick="restartQuiz()">Ulangi Quiz</button>
+      </section>
+    </main>
+  </div>
+
+<script>
+const questions = [
+  {
+    q: "Pada bentuk aljabar 5x + 3, yang merupakan variabel adalah ....",
+    options: ["5", "x", "3", "5x"],
+    answer: 1,
+    explain: "Variabel adalah lambang berupa huruf yang nilainya dapat berubah. Pada 5x + 3, variabelnya adalah x."
+  },
+  {
+    q: "Koefisien dari 7a pada bentuk aljabar 7a - 4 adalah ....",
+    options: ["a", "4", "7", "-4"],
+    answer: 2,
+    explain: "Koefisien adalah bilangan yang mengalikan variabel. Koefisien a adalah 7."
+  },
+  {
+    q: "Konstanta dari bentuk aljabar 3x + 8 adalah ....",
+    options: ["3", "x", "8", "3x"],
+    answer: 2,
+    explain: "Konstanta adalah suku yang tidak memiliki variabel. Jadi konstantanya adalah 8."
+  },
+  {
+    q: "Hasil dari 4x + 3x adalah ....",
+    options: ["7", "7x", "12x", "x"],
+    answer: 1,
+    explain: "Suku sejenis dapat dijumlahkan koefisiennya: 4x + 3x = (4 + 3)x = 7x."
+  },
+  {
+    q: "Sederhanakan bentuk 9a - 5a + 2.",
+    options: ["4a + 2", "14a + 2", "4a - 2", "9a + 2"],
+    answer: 0,
+    explain: "Gabungkan suku sejenis: 9a - 5a + 2 = 4a + 2."
+  },
+  {
+    q: "Hasil dari 3(x + 2) adalah ....",
+    options: ["3x + 2", "3x + 5", "3x + 6", "x + 6"],
+    answer: 2,
+    explain: "Gunakan sifat distributif: 3(x + 2) = 3 × x + 3 × 2 = 3x + 6."
+  },
+  {
+    q: "Jika x = 4, nilai dari 2x + 5 adalah ....",
+    options: ["9", "11", "13", "15"],
+    answer: 2,
+    explain: "Substitusikan x = 4: 2(4) + 5 = 8 + 5 = 13."
+  },
+  {
+    q: "Hasil dari (5x + 3) + (2x - 1) adalah ....",
+    options: ["7x + 2", "7x + 4", "3x + 2", "10x + 2"],
+    answer: 0,
+    explain: "Jumlahkan suku sejenis: 5x + 2x = 7x dan 3 - 1 = 2. Hasilnya 7x + 2."
+  },
+  {
+    q: "Hasil dari (8a + 6) - (3a + 2) adalah ....",
+    options: ["5a + 8", "11a + 4", "5a + 4", "5a - 4"],
+    answer: 2,
+    explain: "Hilangkan tanda kurung: 8a + 6 - 3a - 2 = 5a + 4."
+  },
+  {
+    q: "Ibu membeli 3 kantong apel. Setiap kantong berisi x apel. Jika ibu mendapat tambahan 4 apel, bentuk aljabar jumlah seluruh apel adalah ....",
+    options: ["3 + x + 4", "3x + 4", "4x + 3", "3x - 4"],
+    answer: 1,
+    explain: "Tiga kantong yang masing-masing berisi x apel berjumlah 3x. Setelah ditambah 4 apel, bentuknya 3x + 4."
+  }
+];
+
+let current = 0;
+let score = 0;
+let answeredCount = 0;
+let locked = false;
+
+const questionEl = document.getElementById("question");
+const optionsEl = document.getElementById("options");
+const feedbackEl = document.getElementById("feedback");
+const nextBtn = document.getElementById("next");
+
+function renderQuestion() {
+  locked = false;
+  const item = questions[current];
+  document.getElementById("counter").textContent = `Soal ${current + 1} dari ${questions.length}`;
+  document.getElementById("question-label").textContent = `PERTANYAAN ${current + 1}`;
+  document.getElementById("answered").textContent = `Sudah dijawab: ${answeredCount}`;
+  document.getElementById("progress").style.width = `${(current / questions.length) * 100}%`;
+  questionEl.textContent = item.q;
+  optionsEl.innerHTML = "";
+  feedbackEl.className = "";
+  feedbackEl.textContent = "";
+  nextBtn.disabled = true;
+  nextBtn.textContent = current === questions.length - 1 ? "Lihat Hasil" : "Soal Berikutnya";
+
+  item.options.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.className = "option";
+    button.innerHTML = `<span class="letter">${String.fromCharCode(65 + index)}</span><span></span>`;
+    button.querySelector("span:last-child").textContent = option;
+    button.addEventListener("click", () => chooseAnswer(index));
+    optionsEl.appendChild(button);
+  });
+}
+
+function chooseAnswer(selected) {
+  if (locked) return;
+  locked = true;
+  answeredCount++;
+  const item = questions[current];
+  const buttons = [...optionsEl.querySelectorAll("button")];
+  buttons.forEach((button, index) => {
+    button.disabled = true;
+    if (index === item.answer) button.classList.add("correct");
+    if (index === selected && selected !== item.answer) button.classList.add("wrong");
+  });
+
+  if (selected === item.answer) {
+    score += 10;
+    feedbackEl.className = "good";
+    feedbackEl.textContent = "Benar! " + item.explain;
+  } else {
+    feedbackEl.className = "bad";
+    feedbackEl.textContent = "Belum tepat. Jawaban yang benar adalah " +
+      String.fromCharCode(65 + item.answer) + ". " + item.explain;
+  }
+  document.getElementById("answered").textContent = `Sudah dijawab: ${answeredCount}`;
+  nextBtn.disabled = false;
+}
+
+nextBtn.addEventListener("click", () => {
+  if (current < questions.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+});
+
+function showResult() {
+  document.getElementById("quiz-area").style.display = "none";
+  document.getElementById("result").style.display = "block";
+  document.getElementById("progress").style.width = "100%";
+  document.getElementById("score").textContent = `${score}/100`;
+  document.getElementById("summary").textContent =
+    `Kamu menjawab ${answeredCount} soal. Jawaban benar: ${score / 10} soal dan jawaban salah: ${10 - score / 10} soal.`;
+  let message = "Tetap semangat belajar!";
+  if (score >= 90) message = "Hebat sekali! Pemahaman aljabarmu sangat baik.";
+  else if (score >= 70) message = "Bagus! Terus tingkatkan pemahamanmu.";
+  else if (score >= 50) message = "Cukup baik. Ayo pelajari kembali materi yang belum dikuasai.";
+  document.getElementById("message").textContent = message;
+}
+
+function restartQuiz() {
+  current = 0;
+  score = 0;
+  answeredCount = 0;
+  document.getElementById("result").style.display = "none";
+  document.getElementById("quiz-area").style.display = "block";
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
 </body>
 </html>
